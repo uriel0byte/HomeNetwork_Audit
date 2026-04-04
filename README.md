@@ -13,7 +13,7 @@ An initial local ARP sweep and port scan were conducted to map the network basel
 * **Device Inventory:** Successfully identified active endpoints, resolving generic hostnames via MAC address tables to identify specific IoT devices (Smart Camera, TrueID TV Box).
 * **Open Ports (Gateway):** Identified Port 80 (HTTP), Port 53 (DNS), and Port 5555 (rplay/ADB - likely utilized by ISP media boxes).
 
-*[Insert Screenshot of Fing Device List & Port Scan [Here]*
+![Open Ports Scanning]()
 
 ## 4. Vulnerability Findings & Remediation
 
@@ -23,7 +23,7 @@ An initial local ARP sweep and port scan were conducted to map the network basel
 * **Remediation:** Enforced strict **WPA2-PSK** security and **AES** (CCMP) encryption across all broadcast bands.
 * **Troubleshooting Note:** During remediation of the 5GHz band, a firmware logic error occurred (`"This SSID has already been used by SSID6"`). Discovered a hidden, duplicate SSID profile causing an internal conflict. Renamed and disabled the ghost profile (`ChaiWat_5G_Ghost`), which allowed the security patch to be successfully applied to the primary interface.
 
-*[Insert Before/After Screenshots of WLAN Security Settings Here]*
+![WPA2 and AES Applied]()
 
 ### Finding 2: Wi-Fi Protected Setup (WPS) Enabled
 * **Observation:** WPS was enabled on both wireless bands by default.
@@ -35,7 +35,7 @@ An initial local ARP sweep and port scan were conducted to map the network basel
 * **Risk:** Leaves the network discoverable to automated internet-wide scanners and removes the primary barrier against unsolicited ingress traffic.
 * **Remediation:** Enabled the IPv4 Firewall (Low/Standard setting) and disabled WAN Ping to drop external ICMP requests, placing the edge device in "stealth mode."
 
-*[Insert Screenshot of Firewall and WAN Ping Settings Here]*
+![Enabled IPv4 Firewall]()
 
 ### Finding 4: Insecure Local Protocols (Vendor Locked)
 * **Observation:** Within the Access Control List (ACL), unencrypted legacy protocols including Telnet, FTP, and TFTP are enabled on the Local Area Network (LAN) interface.
