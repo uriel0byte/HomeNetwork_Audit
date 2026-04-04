@@ -23,7 +23,7 @@ An initial local ARP sweep and port scan were conducted to map the network basel
 * **Remediation:** Enforced strict **WPA2-PSK** security and **AES** (CCMP) encryption across all broadcast bands.
 * **Troubleshooting Note:** During remediation of the 5GHz band, a firmware logic error occurred (`"This SSID has already been used by SSID6"`). Discovered a hidden, duplicate SSID profile causing an internal conflict. Renamed and disabled the ghost profile (`ChaiWat_5G_Ghost`), which allowed the security patch to be successfully applied to the primary interface.
 
-![Deprecated Protocols]()
+![Deprecated Protocols](screenshots/02_vulneralbility_findings/IMG_1601.jpeg)
 
 ### Finding 2: Wi-Fi Protected Setup (WPS) Enabled
 * **Observation:** WPS was enabled on both wireless bands by default.
