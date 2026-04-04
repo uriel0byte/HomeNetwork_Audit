@@ -1,4 +1,4 @@
-# # Home Network Security Audit & Hardening Report
+# Home Network Security Audit & Hardening Report
 
 ## 1. Executive Summary
 Conducted a localized vulnerability assessment and perimeter hardening of an ISP-provided residential gateway. The objective was to identify misconfigurations, deprecate obsolete cryptographic protocols, and establish a baseline defense posture using mobile-centric diagnostic tools. Successfully remediated critical wireless vulnerabilities and navigated vendor-locked firmware to maximize network security.
