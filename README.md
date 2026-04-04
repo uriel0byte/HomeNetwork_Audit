@@ -13,7 +13,7 @@ An initial local ARP sweep and port scan were conducted to map the network basel
 * **Device Inventory:** Successfully identified active endpoints, resolving generic hostnames via MAC address tables to identify specific IoT devices (Smart Camera, TrueID TV Box).
 * **Open Ports (Gateway):** Identified Port 80 (HTTP), Port 53 (DNS), and Port 5555 (rplay/ADB - likely utilized by ISP media boxes).
 
-![Open Ports Scanning]()
+![Open Ports Scanning](screenshots/01_recon_and_baseline/IMG_1595.jpeg)
 
 ## 4. Vulnerability Findings & Remediation
 
