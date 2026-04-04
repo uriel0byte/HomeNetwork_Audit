@@ -35,13 +35,16 @@ An initial local ARP sweep and port scan were conducted to map the network basel
 * **Risk:** Leaves the network discoverable to automated internet-wide scanners and removes the primary barrier against unsolicited ingress traffic.
 * **Remediation:** Enabled the IPv4 Firewall (Low/Standard setting) and disabled WAN Ping to drop external ICMP requests, placing the edge device in "stealth mode."
 
-![Enabled IPv4 Firewall]()
+![Enabled IPv4 Firewall](screenshots/03_remidation_applied/IMG_1607.jpeg)
 
 ### Finding 4: Insecure Local Protocols (Vendor Locked)
 * **Observation:** Within the Access Control List (ACL), unencrypted legacy protocols including Telnet, FTP, and TFTP are enabled on the Local Area Network (LAN) interface.
 * **Risk:** If an internal endpoint is compromised, Telnet traffic can be sniffed to capture administrative credentials in plain text.
 * **Remediation Status:** **Unresolved (Accepted Risk / Vendor Limitation).**
 * **Notes:** The ISP utilizes customized firmware with strict Role-Based Access Control (RBAC). The customer-level administrative account lacks the necessary privileges to modify LAN ACL rules. These ports are likely hardcoded open for ISP field technician diagnostics and TR-069 remote management. The risk is mitigated by the newly enforced WPA2-AES wireless encryption, significantly reducing the likelihood of unauthorized LAN access.
+
+### View all before/after screenshots
+> *📁 [View all before/after configuration screenshots](screenshots/)*
 
 ## 5. Conclusion
 By migrating away from TKIP, disabling WPS, activating the firewall, and documenting ISP limitations, the network's security posture has been significantly elevated from a vulnerable default state to a hardened perimeter. 
