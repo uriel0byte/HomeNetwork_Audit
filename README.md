@@ -114,3 +114,75 @@ Port 5555 running rplay is expected behavior for a media box with AirPlay suppor
 | Telnet/FTP/TFTP open on LAN (ISP firmware) | Medium | Accepted Risk |
 
 Three of four findings were fully remediated through the router's web interface. The remaining finding is a vendor limitation with no available fix at the customer privilege level. It is documented here as an accepted risk, not an oversight.
+
+---
+
+## 6. Key Concepts & Lessons Learned
+
+This section breaks down the technical terms used throughout the report. Written for review — so coming back to this later still makes sense without re-reading the whole thing.
+
+---
+
+### Wireless Encryption
+
+**TKIP (Temporal Key Integrity Protocol)**
+TKIP was introduced as a stopgap fix for the original WEP encryption, which was completely broken. It was never meant to be a long-term solution. The core problem is that TKIP reuses components of WEP's flawed design — an attacker can exploit this to perform a key-recovery attack and decrypt traffic. It was officially deprecated by the IEEE in 2012. Any network still running TKIP in 2025 is running a protocol that the industry retired over a decade ago.
+
+**AES-CCMP**
+AES (Advanced Encryption Standard) with CCMP (Counter Mode with Cipher Block Chaining Message Authentication Code Protocol) is the current standard for wireless encryption. Unlike TKIP, CCMP was built from scratch on a solid cryptographic foundation. When you configure WPA2 to use AES, this is what you're actually enabling. It's what "WPA2" means in practice when configured correctly.
+
+**WPA2-PSK Mixed Mode**
+Mixed mode allows both WPA (using TKIP) and WPA2 (using AES) clients to connect to the same network. The intent was backwards compatibility with older devices. The problem is that the network will fall back to the weaker TKIP protocol if any client requests it — including an attacker deliberately posing as a legacy client. Mixed mode means your security ceiling is set by the weakest device on the network, not the strongest. Always use WPA2-only with AES.
+
+---
+
+### WPS & The Pixie Dust Attack
+
+**WPS (Wi-Fi Protected Setup)**
+WPS was designed to make connecting devices easier — instead of typing a long password, you either press a physical button on the router or enter an 8-digit PIN. The PIN method is where it falls apart. The PIN is verified in two halves, which means an attacker doesn't need to brute-force all 100 million possible 8-digit combinations — they only need to crack each 4-digit half separately, reducing the search space to around 11,000 attempts. That alone is a problem, but Pixie Dust makes it worse.
+
+**Pixie Dust Attack**
+Pixie Dust is an offline attack that targets the WPS PIN exchange. During the WPS handshake, the router generates two random secret values (nonces) to prove it knows the PIN. On many router chipsets, these nonces are generated from a weak or predictable seed — meaning they're not truly random. An attacker captures the WPS handshake, then uses that captured data offline to reconstruct the nonces and recover the PIN without sending a single additional packet to the router. Once the PIN is known, it can be used to retrieve the full WPA2 passphrase. The entire attack can take under a minute on vulnerable hardware. A 20-character random password does nothing to stop it.
+
+---
+
+### Firewall & Network Perimeter
+
+**SPI Firewall (Stateful Packet Inspection)**
+A basic packet filter checks individual packets in isolation — it only looks at the header (source IP, destination IP, port) to decide whether to allow or block. SPI goes further by tracking the *state* of active connections. It knows the difference between a packet that's part of an established, legitimate session and an unsolicited packet arriving from the outside with no corresponding outbound request. This matters because attackers often send crafted packets designed to look legitimate to a basic filter. SPI catches those by checking whether the connection they claim to belong to actually exists.
+
+**WAN Ping (ICMP Echo Request)**
+ICMP is the protocol behind the `ping` command. When WAN ping is enabled, your router responds to ping requests from the public internet. This sounds harmless but it tells anyone scanning the internet that your IP address has a live, responsive device behind it. Automated scanners constantly sweep large IP ranges looking for live hosts to probe further. Disabling WAN ping doesn't make you invisible — your IP is still allocated — but it removes the confirmation signal that makes your device worth investigating further. This is what "stealth mode" means in the context of a consumer router.
+
+---
+
+### Legacy Protocols
+
+**Telnet**
+Telnet is a remote login protocol from 1969. Everything transmitted over Telnet — including usernames, passwords, and commands — is sent in plaintext. Anyone on the same network running a packet capture tool like Wireshark can read Telnet sessions as clearly as reading a text file. It was superseded by SSH (Secure Shell), which encrypts the entire session. There is no legitimate reason to use Telnet in 2025 unless a vendor has hardcoded it into firmware and given you no choice, which is exactly what happened here.
+
+**FTP / TFTP**
+FTP (File Transfer Protocol) has the same problem as Telnet — credentials and file contents are transmitted in cleartext. SFTP (SSH File Transfer Protocol) and FTPS (FTP over SSL) are the encrypted alternatives. TFTP (Trivial FTP) is a stripped-down version of FTP with no authentication at all, commonly used by network devices for firmware updates and configuration backups on the local network. Its presence here is almost certainly for ISP provisioning purposes.
+
+**TR-069**
+TR-069 is a standard protocol that allows ISPs to remotely manage customer-premises equipment (CPE) — routers, modems, TV boxes — from a central server called an ACS (Auto Configuration Server). Through TR-069, an ISP can remotely push firmware updates, change configuration, and pull diagnostic data from your router without any interaction on your end. It runs over HTTP/HTTPS on the WAN side. The open Telnet/FTP/TFTP ports on the LAN side of this router are almost certainly related to ISP technician access and TR-069 provisioning workflows. This is why they cannot be closed — the ISP depends on them.
+
+---
+
+### Access Control
+
+**ACL (Access Control List)**
+An ACL is a set of rules that defines what traffic is allowed or denied on a network interface. Each rule specifies conditions (source IP, destination port, protocol) and an action (allow or deny). On this router, the LAN ACL controls which protocols are permitted to communicate with the gateway from inside the network. The Telnet/FTP/TFTP entries exist as explicit allow rules in this ACL that the customer account cannot modify.
+
+**RBAC (Role-Based Access Control)**
+RBAC assigns permissions based on roles rather than individual users. On this ISP router, there are at minimum two roles: ISP administrator (full access) and customer administrator (restricted access). The ISP admin role has the ability to modify LAN ACL rules; the customer role does not. This is standard practice for ISP-provided equipment — the ISP needs to maintain control over provisioning and diagnostics regardless of what the customer does with the device.
+
+---
+
+### Reconnaissance Tools & Techniques
+
+**ARP Sweep**
+ARP (Address Resolution Protocol) maps IP addresses to MAC addresses on a local network. An ARP sweep sends ARP requests to every IP in a subnet range and listens for responses. Any device that responds is active on the network. This is how Fing builds its device list — it sweeps the subnet and collects MAC addresses, then uses MAC vendor lookup tables to identify the manufacturer of each device. That's how a generic hostname becomes "Samsung Smart Camera" or "Apple iPhone."
+
+**MAC Address Lookup**
+Every network interface card has a MAC address — a 48-bit hardware identifier. The first 24 bits (the OUI, Organizationally Unique Identifier) are assigned to the device manufacturer by the IEEE. Public OUI databases map these prefixes to company names. When Fing resolves a generic hostname to a specific device type, it's doing a MAC OUI lookup against one of these databases. This is a core technique in network reconnaissance — a device can hide its hostname, but its MAC address always reveals who made the hardware.
